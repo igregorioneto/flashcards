@@ -1,4 +1,8 @@
 import { useEffect, useState } from "react";
+import TextInput from "./TextInput";
+import TextArea from "./TextArea";
+import Error from "./Error";
+import Button from "./Button";
 
 export default function Form({
   title: formTitle = 'Título do formulário',
@@ -60,7 +64,42 @@ export default function Form({
       onReset={handleFormReset}
       onSubmit={handleFormSubmit}
     >
-      
+      <h2 className="font-semibold flex flex-row justify-center text-xl">
+        {formTitle}
+      </h2>
+
+      <TextInput 
+        labelDescription="Título do flash card:"
+        inputValue={title}
+        onInputChange={handleChangeTitle}
+        autoFocus
+      />
+
+      <TextArea 
+        labelDescription="Descrição do flash card:"
+        textAreaValue={description}
+        onTextAreaChange={handleChangeDescription}
+      />
+
+      <div className="flex flex-row items-center justify-between">
+        <Error>{error}</Error>
+
+        <div>
+          <Button
+            colorClass="bg-red-200"
+            type="reset"
+          >
+            Limpar
+          </Button>
+
+          <Button
+            colorClass="bg-green-200"
+            type="submit"
+          >
+            Salvar
+          </Button>
+        </div>
+      </div>
     </form>
   );
 }
