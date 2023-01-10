@@ -10,7 +10,7 @@ import FlashCard from "../components/FlashCard";
 
 export default function FlashCardPage() {
   const [allCards, setAllCards] = useState(allFlashCards);
-  const [showTitle, setShowTitle] = useState(false);
+  const [showTitle, setShowTitle] = useState(true);
 
   function handleButtonClick() {
     const shuffedCards = shuffleArray(allCards);
@@ -19,11 +19,27 @@ export default function FlashCardPage() {
   }
 
   function handleRadioShowDescription() {
+    const updated = [...allCards]
+      .map(card => ({...card, showTitle: false}));
+
+    setAllCards(updated);
     setShowTitle(false);
   }
 
   function handleRadioShowTitle() {
+    const updated = [...allCards]
+      .map(card => ({...card, showTitle: true}));
+
+    setAllCards(updated);
     setShowTitle(true);
+  }
+
+  function handleToggleFlashCard(cardId) {
+    const updated = [...allCards];
+    const cardIndex = updated.findIndex(card => card.id === cardId);
+    updated[cardIndex].showTitle = !updated[cardIndex].showTitle;
+
+    setAllCards(updated);
   }
 
   return(
@@ -59,13 +75,15 @@ export default function FlashCardPage() {
         </div>
 
         <FlashCards>
-          {allCards.map(({id, title, description}) => {
+          {allCards.map(({id, title, description, showTitle}) => {
             return(
               <FlashCard 
                 key={id}
+                id={id}
                 title={title}
                 description={description}
                 showFlashCardTitle={showTitle}
+                onToggleFlashCard={handleToggleFlashCard}
               />
             );
           })}
