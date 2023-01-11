@@ -18,12 +18,9 @@
     "@craco/craco": "6.1.1"
   },
   "scripts": {
-    "dev": "craco start",
-    "build": "craco build",
-    "prod:local": "craco build && serve -s build",
-    "prod:cloud": "craco build && netlify deploy --prod --open --dir build",
-    "prod:cloud:test": "craco build && netlify deploy --open --dir build",
-    "test": "craco test",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
