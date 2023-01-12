@@ -8,7 +8,7 @@ export default function Form({
   title: formTitle = 'Título do formulário',
   isCreate = true,
   children: flashCard = null,
-  onFormSubmit = null
+  onPersist = null
 }) {
   const [title, setTitle] = useState(flashCard?.title || '');
   const [description, setDescription] = useState(flashCard?.description || '');
@@ -30,7 +30,7 @@ export default function Form({
   }
 
   function handleChangeDescription(newDescription) {
-    setTitle(newDescription);
+    setDescription(newDescription);
   }
 
   function handleFormReset() {
@@ -47,8 +47,8 @@ export default function Form({
     if(validateForm()) {
       setError('');
 
-      if(onFormSubmit) {
-        onFormSubmit({ title, description});
+      if(onPersist) {
+        onPersist(title, description);
         handleFormReset();
       }
     } else {
@@ -68,11 +68,10 @@ export default function Form({
         {formTitle}
       </h2>
 
-      <TextInput 
+      <TextInput
         labelDescription="Título do flash card:"
         inputValue={title}
         onInputChange={handleChangeTitle}
-        autoFocus
       />
 
       <TextArea 

@@ -7,20 +7,14 @@ export default function FlashCard({
   showFlashCardTitle = true,
   onToggleFlashCard = null
 }) {
-  const [showTitle, setShowTitle] = useState(showFlashCardTitle);
-
-  // useEffect(() => {
-  //   setShowTitle(showFlashCardTitle);
-  // }, [showFlashCardTitle]);
-
+  console.log(showFlashCardTitle)
   function handleCardClick() {
-    // setShowTitle(current => !current);
     if (onToggleFlashCard) {
       onToggleFlashCard(id);
     }
   }
 
-  const fontSizeClassName = showTitle ? 'text-xl' : 'text-sm';
+  const fontSizeClassName = showFlashCardTitle ? 'text-xl' : 'text-sm';
   
   return(
     <div
@@ -32,7 +26,7 @@ export default function FlashCard({
       style={{ fontFamily: "'JetBrains Mono', monospace" }}
       onClick={handleCardClick}
     >
-      { showTitle ? title : description }
+      { showFlashCardTitle ? title : description }
     </div>
   );
 }

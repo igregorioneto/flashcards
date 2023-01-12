@@ -19,7 +19,8 @@ import {
   apiCreateFlashCard,
   apiUpdateFlashCard,
   apiDeleteFlashCard,
-} from '../services/apiService';
+} from '../services/flashcardService';
+
 import FlashCardItem from "../components/FlashCardItem";
 import Form from "../components/Form";
 
@@ -29,6 +30,7 @@ export default function FlashCardPage() {
   const [loadingCards, setLoadingCards] = useState(true);
   const [error, setError] = useState('');
   const [studyShowTitle, setStudyShowTitle] = useState(true);
+  const [radioButtonShowTitle, setRadioButtonShowTitle] = useState(true);
   const [createMode, setCreateMode] = useState(true);
   const [currentTab, setCurrentTab] = useState(0);
   const [selectedFlashCard, setSelectedFlashCard] = useState(null);
@@ -53,14 +55,12 @@ export default function FlashCardPage() {
 
   useEffect(() => {
     setStudyCards(allCards.map(card => ({...card, showTitle: true})));
-    setStudyShowTitle(true);
-    setSelectedFlashCard(null);
   }, [allCards]);
 
   function handleButtonClick() {
-    const shuffedCards = shuffleArray(allCards);
+    const shuffedCards = shuffleArray(studyCards);
 
-    setAllCards(shuffedCards);
+    setStudyCards(shuffedCards);
   }
 
   function _toggleShowTitleOrDescription(showTitle) {
@@ -71,21 +71,21 @@ export default function FlashCardPage() {
     setStudyShowTitle(showTitle);
   }
 
-  // function handleRadioShowDescription() {
-  //   const updated = [...allCards]
-  //     .map(card => ({...card, showTitle: false}));
+  function handleRadioShowDescription() {
+    const updated = [...studyCards]
+      .map(card => ({...card, showTitle: false}));
 
-  //   setAllCards(updated);
-  //   setStudyShowTitle(false);
-  // }
+    setStudyCards(updated);
+    setRadioButtonShowTitle(false);
+  }
 
-  // function handleRadioShowTitle() {
-  //   const updated = [...allCards]
-  //     .map(card => ({...card, showTitle: true}));
+  function handleRadioShowTitle() {
+    const updated = [...studyCards]
+      .map(card => ({...card, showTitle: true}));
 
-  //   setAllCards(updated);
-  //   setStudyShowTitle(true);
-  // }
+    setStudyCards(updated);
+    setRadioButtonShowTitle(true);
+  }
 
   function handleStudyShowDescription() {
     _toggleShowTitleOrDescription(false);
@@ -96,21 +96,11 @@ export default function FlashCardPage() {
   }
 
   function handleToggleFlashCard(cardId) {
-    // const updated = [...allCards];
-    // const cardIndex = updated.findIndex(card => card.id === cardId);
-    // updated[cardIndex].showTitle = !updated[cardIndex].showTitle;
+    const updated = [...studyCards];
+    const cardIndex = updated.findIndex(card => card.id === cardId);
+    updated[cardIndex].showTitle = !updated[cardIndex].showTitle;
 
-    // setAllCards(updated);
-
-    setStudyCards(
-      studyCards.map(card => {
-        if(card.id === cardId) {
-          return { ...card, showTitle: !card.showTitle }
-        }
-
-        return card;
-      })
-    )
+    setStudyCards(updated);
   }
 
   function handleNewFlashCard() {
@@ -175,13 +165,34 @@ export default function FlashCardPage() {
     }
   }
 
-  function handlePersistFlashCard({ title, description }) {
+  async function handlePersistFlashCard(title, description) {
     if (createMode) {
-      createNewFlashCard({ title, description });
-      return;
+      try {
+        const newCard = await apiCreateFlashCard(title, description);
+        setAllCards([...allCards, newCard]);
+        setError('');
+      } catch (error) {
+        setError(error.message);
+      }
+      
+    } else {
+      try {
+        await apiUpdateFlashCard(selectedFlashCard.id,title, description);
+        setAllCards(
+          allCards.map(card => {
+            if(card.id === selectedFlashCard.id) {
+              return { ...card, title, description };
+            }
+            return card;
+          })
+        );
+        setSelectedFlashCard(null);
+        setCreateMode(true);
+        setError('');
+      } catch (error) {
+        setError(error.message);
+      }
     }
-
-    updateFlashCard({ title, description });
   }
 
   let mainJsx = (
@@ -197,7 +208,7 @@ export default function FlashCardPage() {
   if (!loadingCards && !error) {
     mainJsx = (
       <>
-        <Tabs selectedIndex={currentTab} onSelected={handleChangeTab}>
+        <Tabs selectedIndex={currentTab} onSelect={handleChangeTab}>
           <TabList>
             <Tab>Listagem</Tab>
             <Tab>Cadastro</Tab>
@@ -234,9 +245,9 @@ export default function FlashCardPage() {
             </Button>
 
             <Form
-              title={`${createMode} ? 'Criação' : 'Edição' do Flash Card`}
+              title={`${createMode ? 'Criação' : 'Edição'} do Flash Card`}
               isCreate={createMode}
-              onFormSubmit={handlePersistFlashCard}
+              onPersist={handlePersistFlashCard}
             >
               {selectedFlashCard}
             </Form>
@@ -244,15 +255,19 @@ export default function FlashCardPage() {
 
           <TabPanel>
             <div className="text-center mb-4" >
-              <Button onButtonClick={handleButtonClick} >Embaralhar cards</Button>
+              <Button 
+                onButtonClick={handleButtonClick} 
+              >
+                Embaralhar cards
+              </Button>
             </div>
 
             <div className="flex flex-row items-center justify-center space-x-4 m-4" >
               <RadioButton
                 id="radioButtonShowTitle"
                 name="showInfo"
-                buttonChecked={studyShowTitle}
-                onButtonClick={handleStudyShowTitle}
+                buttonChecked={radioButtonShowTitle}
+                onButtonClick={handleRadioShowTitle}
               >
                 Mostrar título
               </RadioButton>
@@ -260,8 +275,8 @@ export default function FlashCardPage() {
               <RadioButton
                 id="radioButtonShowDescription"
                 name="showInfo"
-                buttonChecked={!studyShowTitle}
-                onButtonClick={handleStudyShowDescription}
+                buttonChecked={!radioButtonShowTitle}
+                onButtonClick={handleRadioShowDescription}
               >
                 Mostrar descrição
               </RadioButton>
